@@ -5,13 +5,14 @@ metadata:
   labels:
     app: datagerry-demo-01
 spec:
-  ports:
-  - port: 80
-    name: web
-  clusterIP: ""
   type: NodePort
   selector:
     app: datagerry-demo-01
+  ports:
+  - protocol: TCP
+    port: 4000
+    targetPort: 4000
+    nodePort: 31001
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -29,14 +30,6 @@ spec:
         app: datagerry-demo-01
     spec:
       containers:
-      - name: nginx
-        image: nethinks/nginx:latest
-        ports:
-        - containerPort: 80
-          name: web
-        env:
-        - name: NGINX_LOCATION_DEFAULT
-          value: "/;/;http://127.0.0.1:4000"
       - name: datagerry
         image: nethinks/datagerry:latest
         env:
