@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: datagerry-demo-01
+  labels:
+    app: datagerry-demo-01
+spec:
+  type: LoadBalancer
+  selector:
+    app: datagerry-demo-01
+  ports:
+  - protocol: TCP
+    port: 4000
+    targetPort: 4000
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: datagerry-demo-01
+spec:
+  selector:
+    matchLabels:
+      app: datagerry-demo-01
+  serviceName: "datagerry-demo-01"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: datagerry-demo-01
+    spec:
+      containers:
+      - name: datagerry
+        image: nethinks/datagerry:latest
+        env:
+        - name: DATAGERRY_Database_host
+          value: "127.0.0.1"
+        - name: DATAGERRY_MessageQueueing_host
+          value: "127.0.0.1"
+      - name: db
+        image: mongo:4.2-bionic
+        volumeMounts:
+        - name: dg-data-01
+          mountPath: /data/db
+        - name: dg-data-01
+          mountPath: /data/configdb
+      - name: broker
+        image: rabbitmq:3.8
+        volumeMounts:
+        - name: dg-data-01
+          mountPath: /var/lib/rabbitmq
+  volumeClaimTemplates:
+  - metadata:
+      name: dg-data-01
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
+      storageClassName: do-block-storage
