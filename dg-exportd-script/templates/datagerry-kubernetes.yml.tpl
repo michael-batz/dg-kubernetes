@@ -2,6 +2,9 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ app_id }}
+  labels:
+    appid: {{ app_id }}
+    appname: {{ app_name }}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
@@ -22,11 +25,12 @@ kind: Service
 metadata:
   name: {{ app_id }}
   labels:
-    app: {{ app_id }}
+    appid: {{ app_id }}
+    appname: {{ app_name }}
 spec:
   type: ClusterIP
   selector:
-    app: {{ app_id }}
+    appid: {{ app_id }}
   ports:
   - protocol: TCP
     port: 4000
@@ -36,16 +40,20 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ app_id }}
+  labels:
+    appid: {{ app_id }}
+    appname: {{ app_name }}
 spec:
   selector:
     matchLabels:
-      app: {{ app_id }}
+      appid: {{ app_id }}
   serviceName: "{{ app_id }}"
   replicas: 1
   template:
     metadata:
       labels:
-        app: {{ app_id }}
+        appid: {{ app_id }}
+        appname: {{ app_name }}
     spec:
       containers:
       - name: datagerry
@@ -70,6 +78,9 @@ spec:
   volumeClaimTemplates:
   - metadata:
       name: {{ app_id }}
+      labels:
+        appid: {{ app_id }}
+        appname: {{ app_name }}
     spec:
       accessModes:
       - ReadWriteOnce
