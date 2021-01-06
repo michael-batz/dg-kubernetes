@@ -53,9 +53,15 @@ def main():
     # check which appids are on kubernetes but not defined in DATAGERRY and remove them
     for app_id in app_ids:
         provisioned_appids.remove(app_id)
+    # remove services, statefulsets, deployments and ingress objects
     for app_id in provisioned_appids:
-        subprocess.run(['/usr/local/bin/kubectl', 'delete', 'services,statefulsets,deployments,ingress,pvc',
+        subprocess.run(['/usr/local/bin/kubectl', 'delete', 'services,statefulsets,deployments,ingress',
                         '-l appid=' + app_id + ',appname=' + app_name], check=True, encoding='utf8')
+    # remove pvc objects in an own step, as there is some waiting time until deployments/statefulsets are removed
+    for app_id in provisioned_appids:
+        subprocess.run(['/usr/local/bin/kubectl', 'delete', 'pvc',
+                        '-l appid=' + app_id + ',appname=' + app_name], check=True, encoding='utf8')
+
 
 
 if __name__ == '__main__':
